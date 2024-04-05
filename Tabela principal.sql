@@ -17,3 +17,15 @@ VALUES (2, 'Pão Francês', '20 pães francês', 2.09, 0.15, 0.05, 0.045)
 
 INSERT INTO Produto(Codigo, Nome, descricao, custo, custo_fixo, comissao, impostos, rentabilidade)
 VALUES (3, 'Capuccino', 'Capuccino em pó', 39.75, 0.15, 0.05, 0.045, 10.95)
+
+UPDATE Produto
+SET rentabilidade = 0.15
+WHERE Codigo = 1
+
+UPDATE Produto
+SET rentabilidade = 0.15
+WHERE Codigo = 2
+
+UPDATE Produto
+SET rentabilidade = 0.15
+WHERE Codigo = 3
