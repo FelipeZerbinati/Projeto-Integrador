@@ -29,3 +29,6 @@ WHERE Codigo = 2
 UPDATE Produto
 SET rentabilidade = 0.15
 WHERE Codigo = 3
+
+ALTER TABLE Produto
+ADD preco_venda number
