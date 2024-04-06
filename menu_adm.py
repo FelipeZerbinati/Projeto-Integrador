@@ -2,9 +2,10 @@ import functions
 
 # UTILIZANDO LISTA E DICIONÁRIOS ENQUANTO NÃO CONSEGUIMOS INTEGRAR O BANCO DE DADOS
 
-produtos = [{'produto': 'PAO BURGUER', 'quantidade': 0, 'preco': 0},
-            {'produto': 'PAO FRANCES', 'quantidade': 0, 'preco': 0},
-            {'produto': 'CAPUCCINO', 'quantidade': 0, 'preco': 0}]
+produtos = [{'produto': 'PAO BURGUER', 'quantidade': 24, 'preco': 6.4},
+            {'produto': 'PAO FRANCES', 'quantidade': 20, 'preco': 0.2},
+            {'produto': 'CAPUCCINO', 'quantidade': 20, 'preco': 10.53}]
+
 
 # TELA DE CADASTRO DE PRODUTOS
 def tela_cadastro():
@@ -12,11 +13,13 @@ def tela_cadastro():
     print("\t\t\t\t\t  CADASTRO DE PRODUTOS")
     print("**************************************************************************************************")
 
+
 # TELA DE REMOÇÃO DE PRODUTOS
 def tela_remover():
     print("**************************************************************************************************")
     print("\t\t\t\t\t      REMOVER")
     print("**************************************************************************************************")
+
 
 # TELA DE VISUALIZAR ESTOQUE
 def tela_estoque():
@@ -24,11 +27,13 @@ def tela_estoque():
     print("\t\t\t\t\t      ESTOQUE")
     print("**************************************************************************************************")
 
+
 # TELA DE ATUALIZAÇÃO DO PRODUTO
 def tela_atualizar():
     print("**************************************************************************************************")
     print("\t\t\t\t\t     ATUALIZAR")
     print("**************************************************************************************************")
+
 
 # TELA DO CÁLCULO DO PREÇO DO PRODUTO
 def tela_calculo():
@@ -36,8 +41,9 @@ def tela_calculo():
     print("\t\t\t\t\t CALCULO PREÇO DE VENDA")
     print("**************************************************************************************************")
 
+
 # CÁLCULO DO PREÇO PRODUTO E ATUALIZAÇÃO DIRETA
-def calculo_PV():
+def calculo_pv():
     functions.limpar_tela()
     tela_calculo()
     prod = input("QUAL O PRODUTO QUE DESEJA CALCULAR O PREÇO? ").upper()
@@ -53,7 +59,8 @@ def calculo_PV():
                         if functions.checagem_numero(imposto):
                             lucro = float(input('QUAL A PORCENTAGEM DE LUCRO QUE VOCÊ QUER? '))
                             if functions.checagem_numero(lucro):
-                                valor_venda = custo_produto / (1 - ((custo_fixo + comissao_vendas + imposto + lucro) / 100))
+                                valor_venda = custo_produto / (
+                                        1 - ((custo_fixo + comissao_vendas + imposto + lucro) / 100))
 
                                 qntd = input("QUAL A QUANTIDADE DO PRODUTO? ")
                                 if functions.checagem_numero(qntd):
@@ -86,7 +93,7 @@ def calculo_PV():
     return None
 
 
-
+# ADICIONAR PRODUTO NA BASE
 def adicionar_produto():
     functions.limpar_tela()
     tela_cadastro()
@@ -105,6 +112,8 @@ def adicionar_produto():
             print(f"O PRODUTO '{addproduto}' FOI ADICIONADO COM SUCESSO!")
             return
 
+
+# REMOVER PRODUTO NA BASE
 def remover_produto():
     functions.limpar_tela()
     tela_remover()
@@ -123,13 +132,17 @@ def remover_produto():
     print(f"O ITEM '{remproduto}' NÃO SE ENCONTRA NA LISTA DE PRODUTOS.")
 
 
+# MOSTRAR PRODUTOS NA BASE
 def mostrar_estoque():
     functions.limpar_tela()
     tela_estoque()
 
     for prod in produtos:
-        print("PRODUTO: {0}, QUANTIDADE: {1}, PREÇO: R$ {2:.2f}".format(prod['produto'], prod['quantidade'], prod['preco']))
+        print("PRODUTO: {0}, QUANTIDADE: {1}, PREÇO: R$ {2:.2f}".format(prod['produto'], prod['quantidade'],
+                                                                        prod['preco']))
 
+
+# ATUALIZAR O ESTOQUE NA BASE
 def atualizar_estoque():
     functions.limpar_tela()
     tela_atualizar()
@@ -159,14 +172,19 @@ def atualizar_estoque():
                 print(f"O PRODUTO '{att_produto}' NÃO ESTÁ NO ESTOQUE.")
 
 
+# MENU PRINCIPAL
 def main_menu():
     functions.limpar_tela()
     while True:
-        print("**********************************************************************************************************************")
+        print(
+            "*******************************************************************************************************************************")
         print("\t\t\t\t\t\t\t MENU")
-        print("**********************************************************************************************************************")
-        print("1.CADASTRAR PRODUTO | 2.REMOVER PRODUTO | 3.VISUALIZAR NO ESTOQUE | 4.ATUALIZAR ESTOQUE | 5. CALCULAR PREÇO | 6.SAIR |")
-        print("**********************************************************************************************************************")
+        print(
+            "*******************************************************************************************************************************")
+        print(
+            "| 1. CADASTRAR PRODUTO | 2. REMOVER PRODUTO | 3. VISUALIZAR NO ESTOQUE | 4. ATUALIZAR ESTOQUE | 5. CALCULAR PREÇO | 6. LOGOUT |")
+        print(
+            "*******************************************************************************************************************************")
         opcao = input("Escolha uma opção: ")
         if opcao == '1':
             adicionar_produto()
@@ -177,17 +195,12 @@ def main_menu():
         elif opcao == '4':
             atualizar_estoque()
         elif opcao == '5':
-            valor_venda = calculo_PV()
+            valor_venda = calculo_pv()
             if valor_venda is not None:
                 print(f"O VALOR DE VENDA DO PRODUTO É: R$ {valor_venda:.2f}")
         elif opcao == '6':
             functions.limpar_tela()
-            print("FINALIZANDO PROGRAMA...")
-            input()
+            print("FINALIZANDO SESSÃO...")
             break
         else:
             print("ERROR! OPÇÃO INVÁLIDA!")
-
-
-
-main_menu()
