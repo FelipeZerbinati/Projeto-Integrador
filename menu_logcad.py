@@ -8,7 +8,7 @@ db = [{'nome': 'admin', 'senha': 'admin', 'adm_priveleges': 'sim'},
 def menu_logcad():
     while True:
         print("**************************************************************************************************")
-        print("\t\t\t\t    | 1. LOGIN | 2. CADASTRO | 3. FECHAR |")
+        print("                             | 1. LOGIN | 2. CADASTRO | 3. FECHAR |                               ")
         print("**************************************************************************************************")
 
         escolha = input("ESCOLHA UMA OPÇÃO: ")
@@ -25,6 +25,9 @@ def menu_logcad():
                 print("ESCOLHA INVÁLIDA!")
 
 def cadastro():
+    print("**************************************************************************************************")
+    print("                                           | CADASTRO |                                           ")
+    print("**************************************************************************************************\n")
     user_input = input("DIGITE O NOME DE USUÁRIO: ")
     pswd_input = input("DIGITE SUA SENHA: ")
 
@@ -38,6 +41,9 @@ def cadastro():
     print("CADASTRADO COM SUCESSO!")
 
 def login():
+    print("**************************************************************************************************")
+    print("                                            | LOGIN |                                             ")
+    print("**************************************************************************************************\n")
     user_input = input('DIGITE O NOME DE USUÁRIO: ')
     pswd_input = input('DIGITE SUA SENHA: ')
 
@@ -53,5 +59,6 @@ def login():
 
     print("NOME DE USUÁRIO E/OU SENHA INVÁLIDOS. TENTE NOVAMENTE!")
     return False
+
 
 menu_logcad()

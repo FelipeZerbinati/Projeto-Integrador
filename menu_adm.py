@@ -10,7 +10,7 @@ produtos = [{'produto': 'PAO BURGUER', 'quantidade': 24, 'preco': 6.4},
 # TELA DE CADASTRO DE PRODUTOS
 def tela_cadastro():
     print("**************************************************************************************************")
-    print("\t\t\t\t\t  CADASTRO DE PRODUTOS")
+    print("\t\t\t\t\tCADASTRO DE PRODUTOS")
     print("**************************************************************************************************")
 
 
@@ -24,21 +24,21 @@ def tela_remover():
 # TELA DE VISUALIZAR ESTOQUE
 def tela_estoque():
     print("**************************************************************************************************")
-    print("\t\t\t\t\t      ESTOQUE")
+    print("\t\t\t\t\t     ESTOQUE")
     print("**************************************************************************************************")
 
 
 # TELA DE ATUALIZAÇÃO DO PRODUTO
 def tela_atualizar():
     print("**************************************************************************************************")
-    print("\t\t\t\t\t     ATUALIZAR")
+    print("\t\t\t\t\t      ATUALIZAR")
     print("**************************************************************************************************")
 
 
 # TELA DO CÁLCULO DO PREÇO DO PRODUTO
 def tela_calculo():
     print("**************************************************************************************************")
-    print("\t\t\t\t\t CALCULO PREÇO DE VENDA")
+    print("\t\t\t\t       CALCULO PREÇO DE VENDA")
     print("**************************************************************************************************")
 
 
@@ -176,15 +176,12 @@ def atualizar_estoque():
 def main_menu():
     functions.limpar_tela()
     while True:
-        print(
-            "*******************************************************************************************************************************")
-        print("\t\t\t\t\t\t\t MENU")
-        print(
-            "*******************************************************************************************************************************")
-        print(
-            "| 1. CADASTRAR PRODUTO | 2. REMOVER PRODUTO | 3. VISUALIZAR NO ESTOQUE | 4. ATUALIZAR ESTOQUE | 5. CALCULAR PREÇO | 6. LOGOUT |")
-        print(
-            "*******************************************************************************************************************************")
+        print("*********************************************************************")
+        print("                              | MENU |                             ")
+        print("*********************************************************************")
+        print("| 1. CADASTRAR PRODUTO | 2. REMOVER PRODUTO | 3. VISUALIZAR ESTOQUE |")
+        print("| 4. ATUALIZAR ESTOQUE | 5. CALCULAR PREÇO | 6. LOGOUT |")
+        print("*********************************************************************")
         opcao = input("Escolha uma opção: ")
         if opcao == '1':
             adicionar_produto()

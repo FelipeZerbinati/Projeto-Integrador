@@ -15,12 +15,15 @@ def mais_opercao():
 
 
 def client_screen():
-    print("******************************************")
+    print("********************************************")
     print("| 1. VER PRODUTOS | 2. COMPRAR | 3. LOGOUT |")
-    print("******************************************")
+    print("********************************************")
 
 
 def mostrar_produtos():
+    print("********************************************")
+    print("                  PRODUTOS                  ")
+    print("********************************************")
     for prod in adm.produtos:
         print("PRODUTO: {0}, QUANTIDADE: {1}, PREÇO: R$ {2:.2f}".format(prod['produto'], prod['quantidade'],
                                                                         prod['preco']))
@@ -29,6 +32,9 @@ def mostrar_produtos():
 
 
 def comprar_produto():
+    print("********************************************")
+    print("                  COMPRAR                   ")
+    print("********************************************")
     for prod in adm.produtos:
         print("PRODUTO: {0}, QUANTIDADE: {1:.0f}, PREÇO: R$ {2:.2f}".format(prod['produto'], prod['quantidade'],
                                                                             prod['preco']))
@@ -71,12 +77,14 @@ def client_menu():
         if functions.checagem_numero(esc):
             if esc == '1':
                 mostrar_produtos()
+                break
             elif esc == '2':
                 comprar_produto()
+                break
             elif esc == '3':
                 print("FINALIZANDO SESSÃO...")
                 functions.visualizar_tela()
-
                 break
             else:
                 print("OPÇÃO INVÁLIDA")
+
