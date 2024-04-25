@@ -22,7 +22,7 @@ def menu_logcad():
         match escolha:
             case '1':
                 functions.limpar_tela()
-                login()
+                login(conexao_usuario)
             case '2':
                 functions.limpar_tela()
                 cadastrar(conexao_usuario)
@@ -83,7 +83,7 @@ def login(conexao):
 
     try:
         cursor = conexao.cursor()
-        cursor.execute("SELECT ADMINISTRADOR FROM CADASTRO WHERE NOME_USUARIO = :1 AND SENHA = :2",
+        cursor.execute("SELECT administrador FROM CADASTRO WHERE nome_usuario = :1 AND senha = :2",
                        (user_input, pswd_input))
         resultado = cursor.fetchone()
         if resultado:

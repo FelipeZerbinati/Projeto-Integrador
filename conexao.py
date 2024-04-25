@@ -3,7 +3,7 @@ import oracledb
 def db_usuario():
     try:
         # Estabelecer conexão com o banco de dados de produtos
-        conexao_usuario = oracledb.connect(user="usuario_produtos", password="senha_produtos", host="endereco_produtos", port=1521)
+        conexao_usuario = oracledb.connect(user="BD150224532", password="Zthrh10", host="172.16.12.14", port=1521)
         print("BANCO DE DADOS CONECTADO COM SUCESSO!")
         return conexao_usuario
     except Exception as e:
@@ -12,7 +12,7 @@ def db_usuario():
 
 def db_produtos():
     try:
-        conexao_produtos = oracledb.connect(user="usuario_produtos", password="senha_produtos", host="endereco_produtos", port=1521)
+        conexao_produtos = oracledb.connect(user="BD150224532", password="Zthrh10", host="172.16.12.14", port=1521)
         print("BANCO DE DADOS CONECTADO COM SUCESSO!")
         return conexao_produtos
     except Exception as e:
