@@ -316,6 +316,3 @@ def main_menu():
                 print("ERROR!! OPÇÃO INVÁLIDA!")
                 print("TENTE NOVAMENTE!")
                 functions.visualizar_tela()
-
-
-main_menu()
