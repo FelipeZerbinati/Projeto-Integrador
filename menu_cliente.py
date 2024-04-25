@@ -1,8 +1,12 @@
 import functions
-import menu_adm as adm
+
+from conexao import db_produtos, db_usuario, fechar_conexao
 
 
-def mais_opercao():
+conexao_produtos = db_produtos()
+conexao_usuarios = db_usuario()
+
+def mais_operacao():
     opc = input("DESEJA FAZER MAIS ALGUMA OPERAÇÃO? [S/N] ").upper()
     if opc == "S":
         client_menu()
@@ -10,63 +14,106 @@ def mais_opercao():
         print("FINALIZANDO PROGRAMA...")
         functions.visualizar_tela()
     else:
-        print("ERROR, OPÇAO INVALIDA! TENTE NOVAMENTE.")
-        mais_opercao()
+        print("ERRO, OPÇÃO INVÁLIDA! TENTE NOVAMENTE.")
+        mais_operacao()
 
 
 def client_screen():
-    print("********************************************")
-    print("| 1. VER PRODUTOS | 2. COMPRAR | 3. LOGOUT |")
-    print("********************************************")
+    functions.limpar_tela()
+    print("**********************************")
+    print("             | MENU |             ")
+    print("**********************************")
+    print("| 1. VER PRODUTOS NO ESTOQUE")
+    print("| 2. COMPRAR")
+    print("| 3. LOGOUT\n")
 
 
-def mostrar_produtos():
-    print("********************************************")
-    print("                  PRODUTOS                  ")
-    print("********************************************")
-    for prod in adm.produtos:
-        print("PRODUTO: {0}, QUANTIDADE: {1}, PREÇO: R$ {2:.2f}".format(prod['produto'], prod['quantidade'],
-                                                                        prod['preco']))
-    functions.visualizar_tela()
-    client_menu()
-
-
-def comprar_produto():
-    print("********************************************")
-    print("                  COMPRAR                   ")
-    print("********************************************")
-    for prod in adm.produtos:
-        print("PRODUTO: {0}, QUANTIDADE: {1:.0f}, PREÇO: R$ {2:.2f}".format(prod['produto'], prod['quantidade'],
-                                                                            prod['preco']))
-    esc = input("Que produto deseja comprar?").upper()
-    for prod in adm.produtos:
-        if esc == prod['produto']:
-            qntd = input("Qual a quantidade que deseja comprar? ")
-            if functions.checagem_numero(qntd):
-                qntd = int(qntd)
-                if prod['quantidade'] >= qntd:
-                    preco_compra = prod['preco'] * qntd
-                    confirmar_compra = input(
-                        "Deseja comprar {0:.0f} unidades do produto {1} por R$ {2:.2f}?".format(qntd, prod['produto'],
-                                                                                                preco_compra)).upper()
-                    if confirmar_compra == 'SIM':
-                        prod['quantidade'] -= qntd
-                        print("COMPRA REALIZADA COM SUCESSO!")
-                        functions.visualizar_tela()
-                        mais_opercao()
-                    elif confirmar_compra == 'NAO':
-                        print("CANCELANDO SUA COMPRA...")
-                        functions.visualizar_tela()
-                        mais_opercao()
-
-                    else:
-                        print("ERRO, OPÇÃO INVÁLIDA.")
-                        functions.visualizar_tela()
-                        mais_opercao()
+def mostrar_produtos(conexao):
+    try:
+        functions.limpar_tela()
+        print("********************************************")
+        print("                  PRODUTOS                  ")
+        print("********************************************")
+        
+        with conexao.cursor() as cursor:
+            cursor.execute("SELECT Nome, Quantidade, Preco, Descricao FROM Produto")
+            produtos = cursor.fetchall()
+            
+            for nome, quantidade, preco, descricao in produtos:
+                if quantidade > 0:
+                    print(f"PRODUTO: {nome}, DESCRIÇÃO: {descricao}, QUANTIDADE: {quantidade}, PREÇO: R$ {preco:.2f}")
                 else:
-                    print("Não temos estoque suficiente para sua compra.")
-                    functions.visualizar_tela()
-                    mais_opercao()
+                    print(f"PRODUTO: {nome} - ESGOTADO")
+                    
+        functions.visualizar_tela()
+        client_menu()
+        
+    except Exception as e:
+        print(f"ERRO AO MOSTRAR PRODUTOS: {str(e)}")
+
+
+def comprar_produto(conexao):
+    try:
+        print("********************************************")
+        print("                  COMPRAR                   ")
+        print("********************************************")
+        
+        with conexao.cursor() as cursor:
+            cursor.execute("SELECT Nome, Quantidade, Preco, Descricao FROM Produto")
+            produtos = cursor.fetchall()
+            
+            produtos_disponiveis = []
+            for nome, quantidade, preco, descricao in produtos:
+                if quantidade > 0:
+                    produtos_disponiveis.append((nome, quantidade, preco, descricao))
+                else:
+                    produtos_disponiveis.append((nome, "ESGOTADO", preco, descricao))
+            
+            if produtos_disponiveis:
+                print("PRODUTOS DISPONÍVEIS PARA COMPRA:")
+                for produto in produtos_disponiveis:
+                    nome, quantidade, preco, descricao = produto
+                    if quantidade != "ESGOTADO":
+                        print(f"PRODUTO: {nome}, DESCRIÇÃO: {descricao}, QUANTIDADE: {quantidade}, PREÇO: R$ {preco:.2f}")
+                    else:
+                        print(f"PRODUTO: {nome} - {quantidade}")
+                
+                esc = input("QUAL PRODUTO DESEJA COMPRAR? ").upper()
+
+                for produto in produtos_disponiveis:
+                    if esc == produto[0]:
+                        if produto[1] != "ESGOTADO":
+                            qntd = input("QUAL A QUANTIDADE QUE DESEJA COMPRAR? ")
+                            if functions.checagem_numero(qntd):
+                                qntd = int(qntd)
+                                if produto[1] >= qntd:
+                                    preco_compra = produto[2] * qntd
+                                    confirmar_compra = input(
+                                        f"DESEJA COMPRAR {qntd} UNIDADES DO PRODUTO {esc} POR R$ {preco_compra:.2f}? ").upper()
+                                    if confirmar_compra == 'SIM':
+                                        with conexao.cursor() as cursor:
+                                            cursor.execute("UPDATE Produto SET Quantidade = Quantidade - :1 WHERE Nome = :2",
+                                                           (qntd, esc))
+                                            conexao.commit()
+                                        print("COMPRA REALIZADA COM SUCESSO!")
+                                        mais_operacao()
+                                    elif confirmar_compra == 'NAO':
+                                        print("CANCELANDO SUA COMPRA...")
+                                        mais_operacao()
+                                    else:
+                                        print("OPÇÃO INVÁLIDA!")
+                                        mais_operacao()
+                                else:
+                                    print("NÃO TEMOS ESTOQUE SUFICIENTE PARA SUA COMPRA.")
+                                    mais_operacao()
+                        else:
+                            print("ESTE PRODUTO ESTÁ ESGOTADO. POR FAVOR, ESCOLHA OUTRO.")
+                            mais_operacao()
+            else:
+                print("NENHUM PRODUTO DISPONÍVEL PARA COMPRA NO MOMENTO.")
+                mais_operacao()
+    except Exception as e:
+        print(f"ERRO AO REALIZAR A COMPRA: {str(e)}")
 
 
 def client_menu():
@@ -74,17 +121,17 @@ def client_menu():
         functions.limpar_tela()
         client_screen()
         esc = input("DIGITE O QUE DESEJA FAZER: ")
-        if functions.checagem_numero(esc):
-            if esc == '1':
-                mostrar_produtos()
+        match esc:
+            case '1':
+                mostrar_produtos(conexao_produtos)
                 break
-            elif esc == '2':
-                comprar_produto()
+            case '2':
+                comprar_produto(conexao_produtos)
                 break
-            elif esc == '3':
+            case '3':
                 print("FINALIZANDO SESSÃO...")
                 functions.visualizar_tela()
+                fechar_conexao(conexao_produtos, conexao_usuarios)
                 break
-            else:
+            case _:
                 print("OPÇÃO INVÁLIDA")
-

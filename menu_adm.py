@@ -1,203 +1,321 @@
 import functions
+from conexao import db_produtos, db_usuario, fechar_conexao
 
-# UTILIZANDO LISTA E DICIONÁRIOS ENQUANTO NÃO CONSEGUIMOS INTEGRAR O BANCO DE DADOS
-
-produtos = [{'produto': 'PAO BURGUER', 'quantidade': 24, 'preco': 6.4},
-            {'produto': 'PAO FRANCES', 'quantidade': 20, 'preco': 0.2},
-            {'produto': 'CAPUCCINO', 'quantidade': 20, 'preco': 10.53}]
+conexao_produtos = db_produtos()
+conexao_usuarios = db_usuario()
 
 
 # TELA DE CADASTRO DE PRODUTOS
 def tela_cadastro():
-    print("**************************************************************************************************")
-    print("\t\t\t\t\tCADASTRO DE PRODUTOS")
-    print("**************************************************************************************************")
+    '''Função para título do cadastro.'''
+    print("**********************************")
+    print("     | CADASTRO DE PRODUTOS |     ")
+    print("**********************************")
 
 
 # TELA DE REMOÇÃO DE PRODUTOS
 def tela_remover():
-    print("**************************************************************************************************")
-    print("\t\t\t\t\t      REMOVER")
-    print("**************************************************************************************************")
+    '''Função para título da remoção.'''
+    print("**********************************")
+    print("      | REMOÇÃO DE PRODUTOS |     ")
+    print("**********************************")
 
 
 # TELA DE VISUALIZAR ESTOQUE
 def tela_estoque():
-    print("**************************************************************************************************")
-    print("\t\t\t\t\t     ESTOQUE")
-    print("**************************************************************************************************")
+    '''Função para título de visualização dos produtos.'''
+    print("**********************************")
+    print("   | VISUALIZAÇÃO DO ESTOQUE |    ")
+    print("**********************************")
 
 
 # TELA DE ATUALIZAÇÃO DO PRODUTO
 def tela_atualizar():
-    print("**************************************************************************************************")
-    print("\t\t\t\t\t      ATUALIZAR")
-    print("**************************************************************************************************")
+    '''Função para atualização dos produtos.'''
+    print("**********************************")
+    print("  | ATUALIZAÇÃO DOS PRODUTOS |    ")
+    print("**********************************")
 
 
 # TELA DO CÁLCULO DO PREÇO DO PRODUTO
 def tela_calculo():
-    print("**************************************************************************************************")
-    print("\t\t\t\t       CALCULO PREÇO DE VENDA")
-    print("**************************************************************************************************")
+    '''Função para título do cálculo do preço de venda.'''
+
+    print("**********************************")
+    print("    | CÁLCULO PREÇO DE VENDA |    ")
+    print("**********************************")
 
 
 # CÁLCULO DO PREÇO PRODUTO E ATUALIZAÇÃO DIRETA
-def calculo_pv():
-    functions.limpar_tela()
-    tela_calculo()
-    prod = input("QUAL O PRODUTO QUE DESEJA CALCULAR O PREÇO? ").upper()
-    for produto in produtos:
-        if produto['produto'] == prod:
-            custo_produto = float(input('QUAL O CUSTO DE PRODUÇÃO? '))
-            if functions.checagem_numero(custo_produto):
-                custo_fixo = float(input('Qual O CUSTO FIXO? '))
-                if functions.checagem_numero(custo_fixo):
-                    comissao_vendas = float(input('QUAL A COMISSAO DE VENDAS? '))
-                    if functions.checagem_numero(comissao_vendas):
-                        imposto = float(input('QUAL O IMPOSTO? '))
-                        if functions.checagem_numero(imposto):
-                            lucro = float(input('QUAL A PORCENTAGEM DE LUCRO QUE VOCÊ QUER? '))
-                            if functions.checagem_numero(lucro):
-                                valor_venda = custo_produto / (
-                                        1 - ((custo_fixo + comissao_vendas + imposto + lucro) / 100))
+def calculo_pv(conexao):
+    '''Esta função serve para realizar os cálculos do preço de venda do produto.'''
+    try:
+        produto = input("QUAL O PRODUTO QUE DESEJA CALCULAR O PREÇO? ").upper()
 
-                                qntd = input("QUAL A QUANTIDADE DO PRODUTO? ")
-                                if functions.checagem_numero(qntd):
-                                    qntd = float(qntd)  # Convertendo para float
-                                    produto['quantidade'] = int(qntd)
-                                    valor_venda_unitaria = valor_venda / qntd
-                                    produto['preco'] = valor_venda_unitaria
-                                    print(f"O preço de venda do produto '{prod}' foi calculado com sucesso.")
-                                    print(f"Novo preço de venda: R$ {valor_venda_unitaria:.2f}")
-                                    return valor_venda_unitaria
-                                else:
-                                    print("A QUANTIDADE DO PRODUTO DEVE SER UM NÚMERO.")
-                                    return None
-                            else:
-                                print("A PORCENTAGEM DE LUCRO DEVE SER UM NÚMERO.")
-                                return None
-                        else:
-                            print("O IMPOSTO DEVE SER UM NÚMERO.")
-                            return None
-                    else:
-                        print("A COMISSÃO DE VENDAS DEVE SER UM NÚMERO.")
-                        return None
-                else:
-                    print("O CUSTO FIXO DEVE SER UM NÚMERO.")
-                    return None
+        with conexao.cursor() as cursor:
+            sql = "SELECT Custo, Custo_Fixo, Comissao, Impostos, Rentabilidade FROM Produto WHERE Nome = :1"
+            cursor.execute(sql, (produto,))
+            resultado = cursor.fetchone()
+
+        if resultado:
+            custo_produto, custo_fixo, comissao, imposto, lucro = resultado
+
+            qntd = float(input("QUAL A QUANTIDADE DO PRODUTO? "))
+            margem_lucro = float(input("QUAL A PORCENTAGEM DE LUCRO QUE VOCÊ QUER? "))
+
+            custo_produto_total = custo_produto * qntd
+            custo_fixo_total = custo_fixo * qntd
+            comissao_total = comissao * qntd
+            imposto_total = imposto * qntd
+            lucro_total = custo_produto_total * (1 + margem_lucro / 100)
+            preco_venda = custo_produto_total + custo_fixo_total + comissao_total + imposto_total + lucro_total
+
+            preco_venda_unitario = preco_venda / qntd
+
+            if lucro_total <= 0:
+                nivel_lucro = "PREJUÍZO"
+            elif lucro_total <= 10:
+                nivel_lucro = "LUCRO BAIXO"
+            elif lucro_total <= 20:
+                nivel_lucro = "LUCRO MÉDIO"
             else:
-                print("O CUSTO DE PRODUÇÃO DEVE SER UM NÚMERO.")
-                return None
-    print(f"O produto '{prod}' não foi encontrado no estoque.")
+                nivel_lucro = "LUCRO ALTO"
+
+            print(f"O PREÇO DE VENDA DO PRODUTO '{produto}' FOI CALCULADO COM SUCESSO.")
+            print(f"NOVO PREÇO DE VENDA: R$ {preco_venda_unitario:.2f}")
+            print(f"CUSTO TOTAL DO PRODUTO: R$ {custo_produto_total:.2f}")
+            print(f"CUSTO FIXO TOTAL: R$ {custo_fixo_total:.2f}")
+            print(f"COMISSÃO TOTAL: R$ {comissao_total:.2f}")
+            print(f"IMPOSTO TOTAL: R$ {imposto_total:.2f}")
+            print(f"LUCRO TOTAL: R$ {lucro_total:.2f} - {nivel_lucro}")
+
+        else:
+            print(f"O PRODUTO '{produto}' NÃO FOI ENCONTRADO NO ESTOQUE.")
+
+    except Exception as e:
+        print(f"ERRO AO CALCULAR O PREÇO DE VENDA: {str(e)}")
+
     return None
 
 
 # ADICIONAR PRODUTO NA BASE
-def adicionar_produto():
+def adicionar_produto(conexao):
+    '''Esta função serve para adicionar um novo produto na base de dados, recebendo os valores
+    do preço de venda, nome do produto e a quantidade em estoque.'''
     functions.limpar_tela()
     tela_cadastro()
+    try:
+        addproduto = input("DIGITE O NOME DO PRODUTO A SER CADASTRADO: ").upper()
+        qnt_estoque = int(input("QUAL A QUANTIDADE DO ESTOQUE? "))
+        preco = float(input("QUAL O PREÇO DO PRODUTO POR UNIDADE? "))
+        descricao = input("DE UMA BREVE DESCRIÇÃO DO PRODUTO.")
 
-    addproduto = input("DIGITE O NOME DO PRODUTO A SER CADASTRADO: ").upper()
-    for prod in produtos:
-        if prod['produto'] == addproduto:
-            print(f"O PRODUTO '{addproduto}' JÁ FOI CADASTRADO ANTERIORMENTE!")
-            return
-
-    qnt_estoque = input("QUAL A QUANTIDADE DO ESTOQUE? ")
-    if functions.checagem_numero(qnt_estoque):
-        preco = input("QUAL O PREÇO DO PRODUTO POR UNIDADE? ")
-        if functions.checagem_numero(preco):
-            produtos.append({'produto': addproduto, 'quantidade': qnt_estoque, 'preco': preco})
-            print(f"O PRODUTO '{addproduto}' FOI ADICIONADO COM SUCESSO!")
-            return
+        with conexao.cursor() as cursor:
+            sql = "INSERT INTO Produto (Nome, Quantidade, Preco, Descricao) VALUES (:1, :2, :3, :4)"
+            cursor.execute(sql, (addproduto, qnt_estoque, preco, descricao))
+        
+        print(f"O PRODUTO '{addproduto}' FOI ADICIONADO COM SUCESSO!")
+        conexao.commit()  
+    except Exception as e:
+        print(f"Erro ao adicionar o produto: {str(e)}")
+    functions.visualizar_tela()
 
 
 # REMOVER PRODUTO NA BASE
-def remover_produto():
-    functions.limpar_tela()
-    tela_remover()
-    print("PRODUTOS DISPONÍVEIS: ")
-    for prod in produtos:
-        print(prod['produto'])
+def remover_produto(conexao):
+    '''Esta função serve para realizar a remoção do produto da base de dados e pedir uma confirmação ao usuário.'''
+    try:
+        print("**********************************")
+        print("|      REMOÇÃO DE PRODUTOS      |")
+        print("**********************************")
 
-    remproduto = input("DIGITE O PRODUTO A SER REMOVIDO: ").upper()
-    for prod in produtos:
-        if prod['produto'] == remproduto:
-            produtos.remove(prod)
-            print(f"O ITEM '{remproduto}' FOI REMOVIDO COM SUCESSO!")
-            print(produtos)
-            return
+        print("PRODUTOS DISPONÍVEIS: ")
+        with conexao.cursor() as cursor:
+            cursor.execute("SELECT Nome FROM Produto")
+            produtos = cursor.fetchall()
+            for produto in produtos:
+                print(produto[0])
 
-    print(f"O ITEM '{remproduto}' NÃO SE ENCONTRA NA LISTA DE PRODUTOS.")
+        remproduto = input("DIGITE O PRODUTO A SER REMOVIDO: ").upper()
+
+        confirmacao = input(f"DESEJA MESMO REMOVER O PRODUTO '{remproduto}'? (S/N)").upper()
+
+        if confirmacao == 'S':
+            with conexao.cursor() as cursor:
+                cursor.execute("DELETE FROM Produto WHERE Nome = :1", (remproduto,))
+                conexao.commit()
+                print(f"O PRODUTO '{remproduto}' FOI REMOVIDO COM SUCESSO!")
+
+        elif confirmacao == 'N':
+            print(f"CANCELANDO A REMOÇÃO DO PRODUTO '{remproduto}'!")
+
+        else:
+            print("OPÇÃO INVÁLIDA! TENTE NOVAMENTE!")
+
+    except Exception as e:
+        print(f"ERRO AO REMOVER O PRODUTO: {str(e)}")
+    functions.visualizar_tela()
 
 
-# MOSTRAR PRODUTOS NA BASE
-def mostrar_estoque():
-    functions.limpar_tela()
-    tela_estoque()
+# MOSTRAR PRODUTOS DA BASE
+def mostrar_estoque(conexao):
+    '''Esta função serve para mostrar todas as informações dos produtos disponíveis no estoque.'''
+    try:
+        print("**********************************")
+        print("|   VISUALIZAÇÃO DO ESTOQUE      |")
+        print("**********************************")
 
-    for prod in produtos:
-        print("PRODUTO: {0}, QUANTIDADE: {1}, PREÇO: R$ {2:.2f}".format(prod['produto'], prod['quantidade'],
-                                                                        prod['preco']))
+        with conexao.cursor() as cursor:
+            cursor.execute("SELECT * FROM Produto")
+            produtos = cursor.fetchall()
 
+        if produtos:
+            for produto in produtos:
+                codigo, nome, descricao, custo, custo_fixo, comissao, impostos, rentabilidade = produto
+                print("CÓDIGO:", codigo)
+                print("NOME:", nome)
+                print("DESCRIÇÃO:", descricao)
+                print("CUSTO:", custo)
+                print("CUSTO FIXO:", custo_fixo)
+                print("COMISSÃO:", comissao)
+                print("IMPOSTOS:", impostos)
+                print("RENTABILIDADE:", rentabilidade)
+                print("----------------------------------")
+        else:
+            print("NENHUM PRODUTO ENCONTRADO NO ESTOQUE.")
 
-# ATUALIZAR O ESTOQUE NA BASE
-def atualizar_estoque():
-    functions.limpar_tela()
-    tela_atualizar()
+    except Exception as e:
+        print(f"ERRO AO MOSTRAR O ESTOQUE: {str(e)}")
 
-    for prod in produtos:
-        print("PRODUTO: {0}, QUANTIDADE: {1}".format(prod['produto'], prod['quantidade'], prod['preco']))
+def tornar_administrador(conexao):
+    '''Esta função serve para transformar um usuário em administrador na base de dados.'''
+    try:
+        print("**********************************")
+        print("|   TORNAR USUÁRIO ADMINISTRADOR |")
+        print("**********************************")
 
-    att_produto = input("QUAL O PRODUTO QUE DESEJA ATUALIZAR? ").upper()
-    for prod in produtos:
-        if prod['produto'] == att_produto:
-            esc = input("O QUE DESEJA ATUALIZAR? ").upper()
-            if esc == 'ESTOQUE':
-                att_estoque = input("QUAL A QUANTIDADE NOVA DO ESTOQUE? ")
-                if functions.checagem_numero(att_estoque):
-                    prod['quantidade'] = att_estoque
-                else:
-                    print("A NOVA QUANTIDADE DO PRODUTO TEM QUE SER INTEIRO.")
-            elif esc == 'PRECO':
-                att_preco = input("QUAL O NOVO PREÇO DO PRODUTO? ")
-                if functions.checagem_numero(att_preco):
-                    prod['preco'] = att_preco
-                else:
-                    print("VALOR DO PRODUTO TEM QUE SER EM VALOR MONETÁRIO.")
-                print(f"A QUANTIDADE DO PRODUTO '{att_produto}' FOI ATUALIZADA COM SUCESSO!")
-                return
+        with conexao.cursor() as cursor:
+            cursor.execute("SELECT nome_usuario FROM cadastro")
+            usuarios = cursor.fetchall()
+
+        if usuarios:
+            print("USUÁRIOS DISPONÍVEIS:")
+            for usuario in usuarios:
+                print(usuario[0])
+
+            nome_usuario = input("QUAL USUÁRIO DESEJA TORNAR ADMINISTRADOR? ").upper()
+
+            confirmacao = input(f"DESEJA TORNAR O USUÁRIO '{nome_usuario}' ADMINISTRADOR? (S/N)").upper()
+
+            if confirmacao == 'S':
+                with conexao.cursor() as cursor:
+                    cursor.execute("UPDATE cadastro SET administrador = 'SIM' WHERE nome_usuario = :1", (nome_usuario,))
+                    conexao.commit()
+                print(f"O USUÁRIO '{nome_usuario}' FOI TORNADO ADMINISTRADOR COM SUCESSO!")
+            elif confirmacao == 'N':
+                print(f"OPERAÇÃO CANCELADA. O USUÁRIO '{nome_usuario}' NÃO FOI TORNADO ADMINISTRADOR.")
             else:
-                print(f"O PRODUTO '{att_produto}' NÃO ESTÁ NO ESTOQUE.")
+                print("OPÇÃO INVÁLIDA! TENTE NOVAMENTE.")
 
+        else:
+            print("NÃO HÁ USUÁRIOS NA BASE DE DADOS.")
+
+    except Exception as e:
+        print(f"ERRO AO TORNAR USUÁRIO ADMINISTRADOR: {str(e)}")
+
+
+
+def atualizar_produto(conexao):
+    '''Esta função serve para atualizar as informações de um produto na base de dados.'''
+    try:
+        print("**********************************")
+        print("|   ATUALIZAÇÃO DE PRODUTO      |")
+        print("**********************************")
+
+        nome_produto = input("QUAL O NOME DO PRODUTO QUE DESEJA ATUALIZAR? ").upper()
+
+        with conexao.cursor() as cursor:
+            cursor.execute("SELECT * FROM Produto WHERE Nome = :1", (nome_produto,))
+            produto = cursor.fetchone()
+
+        if produto:
+            print("INFORMAÇÕES ATUAIS DO PRODUTO:")
+            print("CÓDIGO:", produto[0])
+            print("NOME:", produto[1])
+            print("DESCRIÇÃO:", produto[2])
+            print("CUSTO:", produto[3])
+            print("CUSTO FIXO:", produto[4])
+            print("COMISSÃO:", produto[5])
+            print("IMPOSTOS:", produto[6])
+            print("RENTABILIDADE:", produto[7])
+
+            opcao = input("QUAL INFORMAÇÃO DESEJA ATUALIZAR (NOME/DESCRIÇÃO/CUSTO/CUSTO FIXO/COMISSÃO/IMPOSTOS/RENTABILIDADE)? ").upper()
+
+            if opcao == 'NOME':
+                novo_valor = input("NOVO NOME DO PRODUTO: ").upper()
+            elif opcao == 'DESCRIÇÃO':
+                novo_valor = input("NOVA DESCRIÇÃO DO PRODUTO: ")
+            elif opcao == 'CUSTO' or opcao == 'CUSTO FIXO' or opcao == 'COMISSÃO' or opcao == 'IMPOSTOS' or opcao == 'RENTABILIDADE':
+                novo_valor = float(input(f"NOVO VALOR DE {opcao}: "))
+            else:
+                print("OPÇÃO INVÁLIDA!")
+                return
+
+            with conexao.cursor() as cursor:
+                cursor.execute(f"UPDATE Produto SET {opcao} = :1 WHERE Nome = :2", (novo_valor, nome_produto))
+                conexao.commit()
+
+            print(f"A INFORMAÇÃO '{opcao}' DO PRODUTO '{nome_produto}' FOI ATUALIZADA COM SUCESSO.")
+
+        else:
+            print(f"O PRODUTO '{nome_produto}' NÃO FOI ENCONTRADO NO ESTOQUE.")
+
+    except Exception as e:
+        print(f"ERRO AO ATUALIZAR O PRODUTO: {str(e)}")
 
 # MENU PRINCIPAL
 def main_menu():
     functions.limpar_tela()
     while True:
-        print("*********************************************************************")
-        print("                              | MENU |                             ")
-        print("*********************************************************************")
-        print("| 1. CADASTRAR PRODUTO | 2. REMOVER PRODUTO | 3. VISUALIZAR ESTOQUE |")
-        print("| 4. ATUALIZAR ESTOQUE | 5. CALCULAR PREÇO | 6. LOGOUT |")
-        print("*********************************************************************")
+        print("**********************************")
+        print("             | MENU |             ")
+        print("**********************************")
+        print("| 1. ADICIONAR PRODUTOS ")
+        print("| 2. REMOVER PRODUTOS")
+        print("| 3. MOSTRAR PRODUTOS")
+        print("| 4. ATUALIZAR PRODUTOS")
+        print("| 5. CÁLCULO DO PREÇO DE VENDA")
+        print("| 6. ADICIONAR USUÁRIO COMO ADMINISTRADOR")
+        print("| 7. LOGOUT\n")
         opcao = input("Escolha uma opção: ")
-        if opcao == '1':
-            adicionar_produto()
-        elif opcao == '2':
-            remover_produto()
-        elif opcao == '3':
-            mostrar_estoque()
-        elif opcao == '4':
-            atualizar_estoque()
-        elif opcao == '5':
-            valor_venda = calculo_pv()
-            if valor_venda is not None:
-                print(f"O VALOR DE VENDA DO PRODUTO É: R$ {valor_venda:.2f}")
-        elif opcao == '6':
-            functions.limpar_tela()
-            print("FINALIZANDO SESSÃO...")
-            break
-        else:
-            print("ERROR! OPÇÃO INVÁLIDA!")
+        match opcao:
+            case '1':
+                adicionar_produto(conexao_produtos)
+                functions.limpar_tela()
+            case '2':
+                remover_produto(conexao_produtos)
+            case '3':
+                mostrar_estoque(conexao_produtos)
+            case '4':
+                atualizar_produto(conexao_produtos)
+            case '5':
+                valor_venda = calculo_pv(conexao_produtos)
+                if valor_venda is not None:
+                    print(f"O VALOR DE VENDA DO PRODUTO É: R$ {valor_venda:.2f}")
+            case '6':
+                tornar_administrador(conexao_usuarios)
+                functions.visualizar_tela()
+            case '7':
+                functions.limpar_tela()
+                print("FINALIZANDO SESSÃO...")
+                fechar_conexao(conexao_produtos)
+                fechar_conexao(conexao_usuarios)
+                functions.visualizar_tela()
+                break
+            case _:
+                print("ERROR!! OPÇÃO INVÁLIDA!")
+                print("TENTE NOVAMENTE!")
+                functions.visualizar_tela()
+
+
+main_menu()
