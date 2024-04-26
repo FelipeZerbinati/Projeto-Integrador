@@ -36,12 +36,13 @@ def mostrar_produtos(conexao):
         print("********************************************")
         
         with conexao.cursor() as cursor:
-            cursor.execute("SELECT Nome, Quantidade, Preco, Descricao FROM Produto")
+            cursor.execute("SELECT Nome, Quantidade, Preco_venda, Descricao FROM Produto")
             produtos = cursor.fetchall()
-            
-            for nome, quantidade, preco, descricao in produtos:
-                if quantidade > 0:
-                    print(f"PRODUTO: {nome}, DESCRIÇÃO: {descricao}, QUANTIDADE: {quantidade}, PREÇO: R$ {preco:.2f}")
+
+            for nome, quantidade, preco_venda, descricao in produtos:
+                print(f"DEBUG: Produto: {nome}, Quantidade: {quantidade}, Preço: {preco_venda}, Descrição: {descricao}")
+                if quantidade is not None and quantidade > 0:
+                    print(f"PRODUTO: {nome}, DESCRIÇÃO: {descricao}, QUANTIDADE: {quantidade}, PREÇO: R$ {preco_venda:.2f}")
                 else:
                     print(f"PRODUTO: {nome} - ESGOTADO")
                     
@@ -59,26 +60,26 @@ def comprar_produto(conexao):
         print("********************************************")
         
         with conexao.cursor() as cursor:
-            cursor.execute("SELECT Nome, Quantidade, Preco, Descricao FROM Produto")
+            cursor.execute("SELECT Nome, Quantidade, Preco_venda, Descricao FROM Produto")
             produtos = cursor.fetchall()
             
             produtos_disponiveis = []
-            for nome, quantidade, preco, descricao in produtos:
-                if quantidade > 0:
-                    produtos_disponiveis.append((nome, quantidade, preco, descricao))
+            for nome, quantidade, preco_venda, descricao in produtos:
+                if quantidade is not None and quantidade > 0:
+                    produtos_disponiveis.append((nome, quantidade, preco_venda, descricao))
                 else:
-                    produtos_disponiveis.append((nome, "ESGOTADO", preco, descricao))
+                    produtos_disponiveis.append((nome, "ESGOTADO", preco_venda, descricao))
             
             if produtos_disponiveis:
                 print("PRODUTOS DISPONÍVEIS PARA COMPRA:")
                 for produto in produtos_disponiveis:
-                    nome, quantidade, preco, descricao = produto
+                    nome, quantidade, preco_venda, descricao = produto
                     if quantidade != "ESGOTADO":
-                        print(f"PRODUTO: {nome}, DESCRIÇÃO: {descricao}, QUANTIDADE: {quantidade}, PREÇO: R$ {preco:.2f}")
+                        print(f"PRODUTO: {nome}, DESCRIÇÃO: {descricao}, QUANTIDADE: {quantidade}, PREÇO: R$ {preco_venda:.2f}")
                     else:
                         print(f"PRODUTO: {nome} - {quantidade}")
                 
-                esc = input("QUAL PRODUTO DESEJA COMPRAR? ").upper()
+                esc = input("QUAL PRODUTO DESEJA COMPRAR? ")
 
                 for produto in produtos_disponiveis:
                     if esc == produto[0]:

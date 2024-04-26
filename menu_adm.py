@@ -50,7 +50,7 @@ def tela_calculo():
 def calculo_pv(conexao):
     '''Esta função serve para realizar os cálculos do preço de venda do produto.'''
     try:
-        produto = input("QUAL O PRODUTO QUE DESEJA CALCULAR O PREÇO? ").upper()
+        produto = input("QUAL O PRODUTO QUE DESEJA CALCULAR O PREÇO? ")
 
         with conexao.cursor() as cursor:
             sql = "SELECT Custo, Custo_Fixo, Comissao, Impostos, Rentabilidade FROM Produto WHERE Nome = :1"
