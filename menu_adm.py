@@ -107,12 +107,13 @@ def adicionar_produto(conexao):
     try:
         addproduto = input("DIGITE O NOME DO PRODUTO A SER CADASTRADO: ").upper()
         qnt_estoque = int(input("QUAL A QUANTIDADE DO ESTOQUE? "))
-        preco = float(input("QUAL O PREÇO DO PRODUTO POR UNIDADE? "))
+        preco_venda = float(input("QUAL O PREÇO DO PRODUTO POR UNIDADE? "))
         descricao = input("DE UMA BREVE DESCRIÇÃO DO PRODUTO.")
+        codigo = input("DIGITE O CODIGO DO PRODUTO.")
 
         with conexao.cursor() as cursor:
-            sql = "INSERT INTO Produto (Nome, Quantidade, Preco, Descricao) VALUES (:1, :2, :3, :4)"
-            cursor.execute(sql, (addproduto, qnt_estoque, preco, descricao))
+            sql = "INSERT INTO Produto (Codigo, Nome, Quantidade, Preco_venda, Descricao) VALUES (:1, :2, :3, :4, :5)"
+            cursor.execute(sql, (codigo, addproduto, qnt_estoque, preco_venda, descricao))
         
         print(f"O PRODUTO '{addproduto}' FOI ADICIONADO COM SUCESSO!")
         conexao.commit()  
@@ -171,7 +172,7 @@ def mostrar_estoque(conexao):
 
         if produtos:
             for produto in produtos:
-                codigo, nome, descricao, custo, custo_fixo, comissao, impostos, rentabilidade = produto
+                codigo, nome, descricao, custo, custo_fixo, comissao, impostos, rentabilidade, preco_venda, desc_cripto, quantidade = produto
                 print("CÓDIGO:", codigo)
                 print("NOME:", nome)
                 print("DESCRIÇÃO:", descricao)
@@ -180,6 +181,9 @@ def mostrar_estoque(conexao):
                 print("COMISSÃO:", comissao)
                 print("IMPOSTOS:", impostos)
                 print("RENTABILIDADE:", rentabilidade)
+                print("PREÇO DE VENDA:", preco_venda)
+                print("DESCRIÇÃO CRIPTOGRAFADA:", desc_cripto)
+                print("QUANTIDADE NO ESTOQUE:", quantidade)
                 print("----------------------------------")
         else:
             print("NENHUM PRODUTO ENCONTRADO NO ESTOQUE.")
@@ -232,7 +236,7 @@ def atualizar_produto(conexao):
         print("|   ATUALIZAÇÃO DE PRODUTO      |")
         print("**********************************")
 
-        nome_produto = input("QUAL O NOME DO PRODUTO QUE DESEJA ATUALIZAR? ").upper()
+        nome_produto = input("QUAL O NOME DO PRODUTO QUE DESEJA ATUALIZAR? ").title()
 
         with conexao.cursor() as cursor:
             cursor.execute("SELECT * FROM Produto WHERE Nome = :1", (nome_produto,))
@@ -248,13 +252,24 @@ def atualizar_produto(conexao):
             print("COMISSÃO:", produto[5])
             print("IMPOSTOS:", produto[6])
             print("RENTABILIDADE:", produto[7])
+            print("PREÇO DE VENDA:", produto[8])
+            print("DESCRIÇÃO CRIPTOGRAFADA:", produto[9])
+            print("QUANTIDADE NO ESTOQUE:", produto[10])
 
-            opcao = input("QUAL INFORMAÇÃO DESEJA ATUALIZAR (NOME/DESCRIÇÃO/CUSTO/CUSTO FIXO/COMISSÃO/IMPOSTOS/RENTABILIDADE)? ").upper()
+            opcao = input("QUAL INFORMAÇÃO DESEJA ATUALIZAR (CODIGO/NOME/DESCRICAO/CUSTO/CUSTO_FIXO/COMISSAO/IMPOSTOS/RENTABILIDADE/PRECO_VENDA/DESC_CRIPTO/QUANTIDADE)? ").upper()
 
             if opcao == 'NOME':
-                novo_valor = input("NOVO NOME DO PRODUTO: ").upper()
-            elif opcao == 'DESCRIÇÃO':
+                novo_valor = input("NOVO NOME DO PRODUTO: ")
+            elif opcao == 'DESCRICAO':
                 novo_valor = input("NOVA DESCRIÇÃO DO PRODUTO: ")
+            elif opcao == 'CODIGO':
+                novo_valor = input("NOVO CÓDIGO DO PRODUTO: ")
+            elif opcao == 'PREÇO DE VENDA':
+                novo_valor = input("NOVO PREÇO DE VENDA: ")
+            elif opcao == 'DESCRIÇÃO CRIPTOGRAFADA':
+                novo_valor = input("NOVA DESC. CRIPTOGRAFADA: ")
+            elif opcao == 'QUANTIDADE':
+                novo_valor = input("NOVA QUANTIDADE: ")
             elif opcao == 'CUSTO' or opcao == 'CUSTO FIXO' or opcao == 'COMISSÃO' or opcao == 'IMPOSTOS' or opcao == 'RENTABILIDADE':
                 novo_valor = float(input(f"NOVO VALOR DE {opcao}: "))
             else:

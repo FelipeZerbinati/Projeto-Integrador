@@ -73,6 +73,7 @@ def cadastrar(conexao):
 
 
 def login(conexao):
+    global cursor
     functions.limpar_tela()
             
     print("***********************************")
