@@ -67,7 +67,7 @@ def calculo_pv(conexao):
             custo_fixo_total = custo_fixo * preco_venda
             comissao_total = comissao * preco_venda
             imposto_total = imposto * preco_venda
-            lucro_total = custo_produto_total * (1 + lucro)
+            lucro_total = (custo_produto_total * (1 + lucro)) - custo_produto_total
 
             preco_venda_unitario = preco_venda / qntd
 
@@ -77,11 +77,12 @@ def calculo_pv(conexao):
             conexao.commit()
             cursor.close()
 
+            percentual_lucro = (lucro_total / custo_produto_total) * 100
             if lucro_total <= 0:
                 nivel_lucro = "PREJUÍZO"
-            elif lucro_total <= 10:
+            elif percentual_lucro <= 10:
                 nivel_lucro = "LUCRO BAIXO"
-            elif lucro_total <= 20:
+            elif percentual_lucro <= 20:
                 nivel_lucro = "LUCRO MÉDIO"
             else:
                 nivel_lucro = "LUCRO ALTO"
@@ -111,15 +112,14 @@ def adicionar_produto(conexao):
     functions.limpar_tela()
     tela_cadastro()
     try:
+        codigo = input("DIGITE O CODIGO DO PRODUTO: ")
         addproduto = input("DIGITE O NOME DO PRODUTO A SER CADASTRADO: ")
         qnt_estoque = int(input("QUAL A QUANTIDADE DO ESTOQUE? "))
-        preco_venda = float(input("QUAL O PREÇO DO PRODUTO POR UNIDADE? "))
         descricao = input("DE UMA BREVE DESCRIÇÃO DO PRODUTO: ")
-        codigo = input("DIGITE O CODIGO DO PRODUTO: ")
 
         with conexao.cursor() as cursor:
-            sql = "INSERT INTO Produto (Codigo, Nome, Quantidade, Preco_venda, Descricao) VALUES (:1, :2, :3, :4, :5)"
-            cursor.execute(sql, (codigo, addproduto, qnt_estoque, preco_venda, descricao))
+            sql = "INSERT INTO Produto (Codigo, Nome, Quantidade, Descricao) VALUES (:1, :2, :3, :4)"
+            cursor.execute(sql, (codigo, addproduto, qnt_estoque, descricao))
             conexao.commit()
 
         print(f"O PRODUTO '{addproduto}' FOI ADICIONADO COM SUCESSO!")
