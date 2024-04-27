@@ -61,16 +61,21 @@ def calculo_pv(conexao):
             custo_produto, custo_fixo, comissao, imposto, lucro = resultado
 
             qntd = float(input("QUAL A QUANTIDADE DO PRODUTO? "))
-            margem_lucro = float(input("QUAL A PORCENTAGEM DE LUCRO QUE VOCÊ QUER? "))
 
+            preco_venda = round((custo_produto*qntd) / (1 - (custo_fixo + comissao + imposto + lucro) ),2)
             custo_produto_total = custo_produto * qntd
-            custo_fixo_total = custo_fixo * qntd
-            comissao_total = comissao * qntd
-            imposto_total = imposto * qntd
-            lucro_total = custo_produto_total * (1 + margem_lucro / 100)
-            preco_venda = custo_produto_total + custo_fixo_total + comissao_total + imposto_total + lucro_total
+            custo_fixo_total = custo_fixo * preco_venda
+            comissao_total = comissao * preco_venda
+            imposto_total = imposto * preco_venda
+            lucro_total = custo_produto_total * (1 + lucro)
 
             preco_venda_unitario = preco_venda / qntd
+
+            cursor = conexao.cursor()
+            sql2 = "UPDATE Produto SET Preco_venda = :preco_venda_unitario WHERE Nome = :1"
+            cursor.execute(sql2, (preco_venda_unitario, produto))
+            conexao.commit()
+            cursor.close()
 
             if lucro_total <= 0:
                 nivel_lucro = "PREJUÍZO"
@@ -82,16 +87,17 @@ def calculo_pv(conexao):
                 nivel_lucro = "LUCRO ALTO"
 
             print(f"O PREÇO DE VENDA DO PRODUTO '{produto}' FOI CALCULADO COM SUCESSO.")
-            print(f"NOVO PREÇO DE VENDA: R$ {preco_venda_unitario:.2f}")
+            print(f"NOVO PREÇO POR UNIDADE: R$ {preco_venda_unitario:.2f}")
+            print(f"NOVO PREÇO TOTAL: R$ {preco_venda:.2f}")
             print(f"CUSTO TOTAL DO PRODUTO: R$ {custo_produto_total:.2f}")
-            print(f"CUSTO FIXO TOTAL: R$ {custo_fixo_total:.2f}")
-            print(f"COMISSÃO TOTAL: R$ {comissao_total:.2f}")
-            print(f"IMPOSTO TOTAL: R$ {imposto_total:.2f}")
-            print(f"LUCRO TOTAL: R$ {lucro_total:.2f} - {nivel_lucro}")
+            print(f"CUSTO FIXO EM REAIS: R$ {custo_fixo_total:.2f}")
+            print(f"COMISSÃO EM REAIS: R$ {comissao_total:.2f}")
+            print(f"IMPOSTO EM REAIS: R$ {imposto_total:.2f}")
+            print(f"LUCRO EM REAIS: R$ {lucro_total:.2f} - {nivel_lucro}")
 
         else:
             print(f"O PRODUTO '{produto}' NÃO FOI ENCONTRADO NO ESTOQUE.")
-
+            #sleep()
     except Exception as e:
         print(f"ERRO AO CALCULAR O PREÇO DE VENDA: {str(e)}")
 
@@ -105,20 +111,21 @@ def adicionar_produto(conexao):
     functions.limpar_tela()
     tela_cadastro()
     try:
-        addproduto = input("DIGITE O NOME DO PRODUTO A SER CADASTRADO: ").upper()
+        addproduto = input("DIGITE O NOME DO PRODUTO A SER CADASTRADO: ")
         qnt_estoque = int(input("QUAL A QUANTIDADE DO ESTOQUE? "))
         preco_venda = float(input("QUAL O PREÇO DO PRODUTO POR UNIDADE? "))
-        descricao = input("DE UMA BREVE DESCRIÇÃO DO PRODUTO.")
-        codigo = input("DIGITE O CODIGO DO PRODUTO.")
+        descricao = input("DE UMA BREVE DESCRIÇÃO DO PRODUTO: ")
+        codigo = input("DIGITE O CODIGO DO PRODUTO: ")
 
         with conexao.cursor() as cursor:
             sql = "INSERT INTO Produto (Codigo, Nome, Quantidade, Preco_venda, Descricao) VALUES (:1, :2, :3, :4, :5)"
             cursor.execute(sql, (codigo, addproduto, qnt_estoque, preco_venda, descricao))
-        
+            conexao.commit()
+
         print(f"O PRODUTO '{addproduto}' FOI ADICIONADO COM SUCESSO!")
-        conexao.commit()  
     except Exception as e:
         print(f"Erro ao adicionar o produto: {str(e)}")
+
     functions.visualizar_tela()
 
 
@@ -137,7 +144,7 @@ def remover_produto(conexao):
             for produto in produtos:
                 print(produto[0])
 
-        remproduto = input("DIGITE O PRODUTO A SER REMOVIDO: ").upper()
+        remproduto = input("DIGITE O PRODUTO A SER REMOVIDO: ")
 
         confirmacao = input(f"DESEJA MESMO REMOVER O PRODUTO '{remproduto}'? (S/N)").upper()
 
@@ -207,7 +214,7 @@ def tornar_administrador(conexao):
             for usuario in usuarios:
                 print(usuario[0])
 
-            nome_usuario = input("QUAL USUÁRIO DESEJA TORNAR ADMINISTRADOR? ").upper()
+            nome_usuario = input("QUAL USUÁRIO DESEJA TORNAR ADMINISTRADOR? ")
 
             confirmacao = input(f"DESEJA TORNAR O USUÁRIO '{nome_usuario}' ADMINISTRADOR? (S/N)").upper()
 
@@ -236,7 +243,7 @@ def atualizar_produto(conexao):
         print("|   ATUALIZAÇÃO DE PRODUTO      |")
         print("**********************************")
 
-        nome_produto = input("QUAL O NOME DO PRODUTO QUE DESEJA ATUALIZAR? ").title()
+        nome_produto = input("QUAL O NOME DO PRODUTO QUE DESEJA ATUALIZAR? ")
 
         with conexao.cursor() as cursor:
             cursor.execute("SELECT * FROM Produto WHERE Nome = :1", (nome_produto,))

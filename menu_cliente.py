@@ -31,24 +31,29 @@ def client_screen():
 def mostrar_produtos(conexao):
     try:
         functions.limpar_tela()
-        print("********************************************")
+        print("")
         print("                  PRODUTOS                  ")
-        print("********************************************")
-        
+        print("")
+
         with conexao.cursor() as cursor:
             cursor.execute("SELECT Nome, Quantidade, Preco_venda, Descricao FROM Produto")
             produtos = cursor.fetchall()
-
             for nome, quantidade, preco_venda, descricao in produtos:
-                print(f"DEBUG: Produto: {nome}, Quantidade: {quantidade}, Preço: {preco_venda}, Descrição: {descricao}")
-                if quantidade is not None and quantidade > 0:
-                    print(f"PRODUTO: {nome}, DESCRIÇÃO: {descricao}, QUANTIDADE: {quantidade}, PREÇO: R$ {preco_venda:.2f}")
+                if quantidade is not None:
+                    if quantidade > 0:
+                        if preco_venda is not None:  # Verifica se preco_venda não é None
+                            print(
+                                f"PRODUTO: {nome}, DESCRIÇÃO: {descricao}, QUANTIDADE: {quantidade}, PREÇO: R$ {preco_venda:.2f}")
+                        else:
+                            print(f"PRODUTO: {nome} - ESGOTADO (Preço não disponível)")
+                    else:
+                        print(f"PRODUTO: {nome} - ESGOTADO")
                 else:
                     print(f"PRODUTO: {nome} - ESGOTADO")
-                    
+
         functions.visualizar_tela()
         client_menu()
-        
+
     except Exception as e:
         print(f"ERRO AO MOSTRAR PRODUTOS: {str(e)}")
 
@@ -66,7 +71,10 @@ def comprar_produto(conexao):
             produtos_disponiveis = []
             for nome, quantidade, preco_venda, descricao in produtos:
                 if quantidade is not None and quantidade > 0:
-                    produtos_disponiveis.append((nome, quantidade, preco_venda, descricao))
+                    if preco_venda is not None:
+                        produtos_disponiveis.append((nome, quantidade, preco_venda, descricao))
+                    else:
+                        print(f"O PREÇO DO PRODUTO {nome} NÃO FOI CADASTRADO AINDA.")
                 else:
                     produtos_disponiveis.append((nome, "ESGOTADO", preco_venda, descricao))
             
@@ -91,7 +99,7 @@ def comprar_produto(conexao):
                                     preco_compra = produto[2] * qntd
                                     confirmar_compra = input(
                                         f"DESEJA COMPRAR {qntd} UNIDADES DO PRODUTO {esc} POR R$ {preco_compra:.2f}? ").upper()
-                                    if confirmar_compra == 'SIM':
+                                    if confirmar_compra == 'SIM' or 's' or 'S':
                                         with conexao.cursor() as cursor:
                                             cursor.execute("UPDATE Produto SET Quantidade = Quantidade - :1 WHERE Nome = :2",
                                                            (qntd, esc))
