@@ -91,10 +91,10 @@ def calculo_pv(conexao):
             print(f"NOVO PREÇO POR UNIDADE: R$ {preco_venda_unitario:.2f}")
             print(f"NOVO PREÇO TOTAL: R$ {preco_venda:.2f}")
             print(f"CUSTO TOTAL DO PRODUTO: R$ {custo_produto_total:.2f}")
-            print(f"CUSTO FIXO EM REAIS: R$ {custo_fixo_total:.2f}")
-            print(f"COMISSÃO EM REAIS: R$ {comissao_total:.2f}")
-            print(f"IMPOSTO EM REAIS: R$ {imposto_total:.2f}")
-            print(f"LUCRO EM REAIS: R$ {lucro_total:.2f} - {nivel_lucro}")
+            print(f"CUSTO FIXO EM REAIS TOTAL: R$ {custo_fixo_total:.2f}")
+            print(f"COMISSÃO EM REAIS TOTAL: R$ {comissao_total:.2f}")
+            print(f"IMPOSTO EM REAIS TOTAL: R$ {imposto_total:.2f}")
+            print(f"LUCRO EM REAIS TOTAL: R$ {lucro_total:.2f} - {nivel_lucro}")
 
         else:
             print(f"O PRODUTO '{produto}' NÃO FOI ENCONTRADO NO ESTOQUE.")
