@@ -115,11 +115,17 @@ def adicionar_produto(conexao):
         codigo = input("DIGITE O CODIGO DO PRODUTO: ")
         addproduto = input("DIGITE O NOME DO PRODUTO A SER CADASTRADO: ")
         qnt_estoque = int(input("QUAL A QUANTIDADE DO ESTOQUE? "))
-        descricao = input("DE UMA BREVE DESCRIÇÃO DO PRODUTO: ")
-
+        descricao = input("DE UMA BREVE DESCRIÇÃO DO PRODUTO: ").upper()
+        custo = input("DIGITE O CUSTO DE PRODUÇÃO EM REAIS: ")
+        custo_fixo = input("DIGITE O CUSTO FIXO DE PRODUTO (com casas decimais, ex: 0.15): ")
+        comissao = input("DIGITE A COMISSAO DE PRODUTO (com casas decimais, ex: 0.15): ")
+        impostos = input("DIGITE O IMPOSTO SOBRE VENDA (com casas decimais, ex: 0.15): ")
+        rentabilidade = input("DIGITE A PORCENTAGEM DE LUCRO (com casas decimais, ex: 0.15): ")
+        descCripto = functions.desc_cripto(descricao)
+        descDecripto = functions.desc_decripto(descCripto)
         with conexao.cursor() as cursor:
-            sql = "INSERT INTO Produto (Codigo, Nome, Quantidade, Descricao) VALUES (:1, :2, :3, :4)"
-            cursor.execute(sql, (codigo, addproduto, qnt_estoque, descricao))
+            sql = "INSERT INTO Produto (Codigo, Nome, Quantidade, Descricao, Desc_Cripto, Desc_Decripto, Custo, Custo_Fixo, Comissao, Impostos, Rentabilidade ) VALUES (:1, :2, :3, :4, :5, :6, :7, :8, :9, :10, :11)"
+            cursor.execute(sql, (codigo, addproduto, qnt_estoque, descricao, descCripto, descDecripto, custo, custo_fixo, comissao, impostos, rentabilidade))
             conexao.commit()
 
         print(f"O PRODUTO '{addproduto}' FOI ADICIONADO COM SUCESSO!")
@@ -179,7 +185,7 @@ def mostrar_estoque(conexao):
 
         if produtos:
             for produto in produtos:
-                codigo, nome, descricao, custo, custo_fixo, comissao, impostos, rentabilidade, preco_venda, desc_cripto, quantidade = produto
+                codigo, nome, descricao, custo, custo_fixo, comissao, impostos, rentabilidade, preco_venda, desc_cripto, quantidade, desc_decripto = produto
                 print("CÓDIGO:", codigo)
                 print("NOME:", nome)
                 print("DESCRIÇÃO:", descricao)
@@ -191,6 +197,7 @@ def mostrar_estoque(conexao):
                 print("PREÇO DE VENDA:", preco_venda)
                 print("DESCRIÇÃO CRIPTOGRAFADA:", desc_cripto)
                 print("QUANTIDADE NO ESTOQUE:", quantidade)
+                print("DESCRIÇÃO DESCRIPTOGRAFADA: ",desc_decripto)
                 print("----------------------------------")
         else:
             print("NENHUM PRODUTO ENCONTRADO NO ESTOQUE.")
@@ -262,23 +269,36 @@ def atualizar_produto(conexao):
             print("PREÇO DE VENDA:", produto[8])
             print("DESCRIÇÃO CRIPTOGRAFADA:", produto[9])
             print("QUANTIDADE NO ESTOQUE:", produto[10])
+            print("DESCRIÇÃO DECRIPTOGRAFADA:", produto[11])
 
-            opcao = input("QUAL INFORMAÇÃO DESEJA ATUALIZAR (CODIGO/NOME/DESCRICAO/CUSTO/CUSTO_FIXO/COMISSAO/IMPOSTOS/RENTABILIDADE/PRECO_VENDA/DESC_CRIPTO/QUANTIDADE)? ").upper()
+            opcao = input("QUAL INFORMAÇÃO DESEJA ATUALIZAR (CODIGO/NOME/DESCRICAO/CUSTO/CUSTO_FIXO/COMISSAO/IMPOSTOS/RENTABILIDADE/PRECO_VENDA/DESC_CRIPTO/QUANTIDADE/DESC_DECRIPTO)? ").upper()
 
             if opcao == 'NOME':
                 novo_valor = input("NOVO NOME DO PRODUTO: ")
             elif opcao == 'DESCRICAO':
-                novo_valor = input("NOVA DESCRIÇÃO DO PRODUTO: ")
+                novo_valor = input("NOVA DESCRIÇÃO DO PRODUTO: ").upper()
+                descCripto = functions.desc_cripto(novo_valor)
+                descDecripto = functions.desc_decripto(descCripto)
+                with conexao.cursor() as cursor:
+                    cursor.execute(f"UPDATE Produto SET DESC_CRIPTO = :1 WHERE Nome = :2", (descCripto, nome_produto))
+                    conexao.commit()
+                with conexao.cursor() as cursor:
+                    cursor.execute(f"UPDATE Produto SET DESC_DECRIPTO = :1 WHERE Nome = :2", (descDecripto, nome_produto))
+                    conexao.commit()
             elif opcao == 'CODIGO':
                 novo_valor = input("NOVO CÓDIGO DO PRODUTO: ")
             elif opcao == 'PREÇO DE VENDA':
                 novo_valor = input("NOVO PREÇO DE VENDA: ")
-            elif opcao == 'DESCRIÇÃO CRIPTOGRAFADA':
+            elif opcao == 'DESC_CRIPTO':
                 novo_valor = input("NOVA DESC. CRIPTOGRAFADA: ")
+            elif opcao == 'DESC_DECRIPTO':
+                novo_valor = input("NOVA DESC. DECRIPTOGRAFADA: ")
             elif opcao == 'QUANTIDADE':
                 novo_valor = input("NOVA QUANTIDADE: ")
-            elif opcao == 'CUSTO' or opcao == 'CUSTO FIXO' or opcao == 'COMISSÃO' or opcao == 'IMPOSTOS' or opcao == 'RENTABILIDADE':
-                novo_valor = float(input(f"NOVO VALOR DE {opcao}: "))
+            elif opcao == 'CUSTO':
+                novo_valor = float(input(f"NOVO VALOR DE CUSTO DE PRODUÇÃO EM REAIS (utilize '.' ao invés de ','): "))
+            elif opcao == 'CUSTO FIXO' or opcao == 'COMISSÃO' or opcao == 'IMPOSTOS' or opcao == 'RENTABILIDADE':
+                novo_valor = float(input(f"NOVO VALOR DE {opcao} (com casas decimais, ex: 0.15): "))
             else:
                 print("OPÇÃO INVÁLIDA!")
                 return
