@@ -89,7 +89,7 @@ def login(conexao):
         resultado = cursor.fetchone()
         if resultado:
             administrador = resultado[0]
-            if administrador == 'sim':
+            if administrador == 'sim' or administrador == 'SIM':
                 print("LOGIN FEITO COM SUCESSO!")
                 functions.visualizar_tela()
                 adm.main_menu()
