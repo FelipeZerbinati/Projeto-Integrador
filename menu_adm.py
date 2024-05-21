@@ -69,7 +69,7 @@ def calculo_pv(conexao):
             imposto_total = imposto * preco_venda
             lucro_total = (custo_produto_total * (1 + lucro)) - custo_produto_total
 
-            preco_venda_unitario = round(preco_venda / qntd,2)
+            preco_venda_unitario = round((preco_venda / qntd),2)
 
             cursor = conexao.cursor()
             sql2 = "UPDATE Produto SET Preco_venda = :preco_venda_unitario WHERE Nome = :1"
